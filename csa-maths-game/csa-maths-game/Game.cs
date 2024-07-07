@@ -4,7 +4,7 @@
     {
         IOperation? Operation { get; set; }
         Random Rng { get; set; }
-        int NumberOfRounds { get; set; } = Int32.MaxValue;
+        int NumberOfRounds { get; set; } = 5;
 
         public Game(Random rand)
         {
@@ -17,16 +17,18 @@
             bool correctAnswer = true;
             TimeSpan lastTimeTaken;
             TimeSpan totalTimeTaken = TimeSpan.FromSeconds(0);
-            int score = -1;
+            int score = 0;
+            int roundsPlayed= 0;
 
-            while (correctAnswer && score < NumberOfRounds)
+            while (roundsPlayed < NumberOfRounds)
             {
-                score++;
                 (correctAnswer, lastTimeTaken) = PlayRound();
+                if (correctAnswer) score++;
+                roundsPlayed++;
                 totalTimeTaken += lastTimeTaken;
             }
 
-            HighScore.Add(score, Operation.GetTextString());
+            HighScore.Add(new(score, Operation.GetTextString()));
             ShowGameEndScreen(score, totalTimeTaken);
         }        
         
@@ -36,21 +38,24 @@
             TimeSpan lastTimeTaken;
             TimeSpan totalTimeTaken = TimeSpan.FromSeconds(0);
             int score = -1;
+            int roundsPlayed = 0;
 
-            while (correctAnswer && score < NumberOfRounds)
+            while (roundsPlayed < NumberOfRounds)
             {
                 Operation = operations[Rng.Next(0, operations.Count)];
-                score++;
                 (correctAnswer, lastTimeTaken) = PlayRound();
+                if (correctAnswer) score++;
+                roundsPlayed++;
                 totalTimeTaken += lastTimeTaken;
             }
 
-            HighScore.Add(score, "Random");
+            HighScore.Add(new GameScore(score, "Random"));
             ShowGameEndScreen(score, totalTimeTaken);
         }
 
         public void ShowGameEndScreen(int score, TimeSpan totalTimeTaken)
         {
+            Console.WriteLine("Score: {0}", score);
             Console.WriteLine("Time taken: {0}", totalTimeTaken.TotalSeconds);
             Console.WriteLine("Avg time taken per question: {0}s", totalTimeTaken.TotalSeconds / (score + 1));
             Console.WriteLine("Press any key to go back to main menu");
